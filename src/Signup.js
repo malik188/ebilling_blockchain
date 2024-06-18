@@ -1,63 +1,105 @@
-import React, { useState } from "react";
-import { auth } from "./firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react'
+import { useAuth } from './context/UserAuthContext'
+import { Link, useNavigate } from "react-router-dom"
+import './Signup.css'
 
 const Signup = () => {
-    const navigate = useNavigate();
-    const [notice, setNotice] = useState("");
-
-    // parameter autentikasi
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-
-    const signupWithUsernameAndPassword = async (e) => {
-        e.preventDefault();
-
-        if (password === confirmPassword) {
-            console.log("password sama");
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-                setNotice("Akun telah dibuat.");
-                navigate("/");
-            } catch {
-                setNotice("Sorry, something went wrong. Please try again.");
-            }     
-        } else {
-            setNotice("Passwords don't match. Please try again.");
+    const navigate = useNavigate()
+    const { error, SignUp, currentuser } = useAuth()
+    const [err, setError] = useState("")
+    const [backError, setBackError] = useState("")
+    const [user, setUser] = useState({
+        FullName: "",
+        email: "",
+        password: "",
+        confirmPassword: ""
+    })
+    useEffect(() => {
+        console.log("i am in")
+        if (error) {
+            setInterval(() => {
+                setBackError("")
+            }, 5000)
+            setBackError(error)
         }
-    };
+    }, [error, currentuser])
+    const UserHandler = (e) => {
+        const { name, value } = e.target;
+        console.log(name +"::::::::::"+value)
+        setUser((pre) => {
+            return {
+                ...pre,
+                [name]: value
+            }
+        })
+    }
 
-    return(
-        <div className = "container">
-            <div className = "row justify-content-center">
-                <form className = "col-md-4 mt-3 pt-3 pb-3">
-                    { "" !== notice &&
-                        <div className = "alert alert-warning" role = "alert">
-                            { notice }    
-                        </div>
-                    }
-                    <div className = "form-floating mb-3">
-                        <input id = "signupEmail" type = "email" className = "form-control" aria-describedby = "emailHelp" placeholder = "name@example.com" value = { email } onChange = { (e) => setEmail(e.target.value) }></input>
-                        <label htmlFor = "signupEmail" className = "form-label">Enter an email address for your username</label>
-                    </div>
-                    <div className = "form-floating mb-3">
-                        <input id = "signupPassword" type = "password" className = "form-control" placeholder = "Password" value = { password } onChange = { (e) => setPassword(e.target.value) }></input>
-                        <label htmlFor = "signupPassword" className = "form-label">Password</label>
-                    </div>
-                    <div className = "form-floating mb-3">
-                        <input id = "confirmPassword" type = "password" className = "form-control" placeholder = "Confirm Password" value = { confirmPassword } onChange = { (e) => setConfirmPassword(e.target.value) }></input>
-                        <label htmlFor = "confirmPassword" className = "form-label">Confirm Password</label>
-                    </div>                    
-                    <div className = "d-grid">
-                        <button type = "submit" className = "btn btn-primary pt-3 pb-3" onClick = {(e) => signupWithUsernameAndPassword(e)}>Signup</button>
-                    </div>
-                    <div className = "mt-3 text-center">
-                        <span>Go back to login? <Link to = "/">Click here.</Link></span>
-                    </div>                    
-                </form>
-            </div>
+    const SubmitHandler = async (e) => {
+        e.preventDefault()
+        const { email, password, confirmPassword, FullName } = user
+        if (password == "" || confirmPassword == "" || email == "" || FullName == "") {
+            setInterval(() => {
+                setError("")
+            }, 5000)
+            return setError("please fill All the field ")
+        }
+        else if (password !== confirmPassword) {
+            setInterval(() => {
+                setError("")
+            }, 5000)
+            return setError("Password does not match")
+        }
+        else if (!password.length >= 6 || !confirmPassword.length >= 6) {
+            setInterval(() => {
+                setError("")
+            }, 5000)
+            return setError("Password Must be Greater then 6 Length")
+        }
+        else {
+
+            SignUp(email, password, FullName)
+            {
+                currentuser && setUser({
+                    FullName: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: ""
+                })
+            }
+            navigate("/")
+        }
+    }
+    return (
+        <div className='box'>
+            {
+                err ? (
+                    err && <p className='error'>{err}</p>
+                ) : (
+                    backError && <p className='error'>{backError}</p>
+                )
+            }
+
+            <form onSubmit={SubmitHandler} className="form">
+                <h2>Registration Form</h2>
+                <div className="inputfield">
+                    <input type="text" placeholder="Nama Lengkap" value={user.FullName} name='FullName' onChange={UserHandler} />
+                </div>
+                <div className="inputfield">
+                    <input type="text" placeholder="Email" value={user.email} name='email' onChange={UserHandler} />
+                </div>
+
+                <div className="inputfield">
+                    <input type="password" placeholder="Password" value={user.password} name='password' onChange={UserHandler} />
+                </div>
+                <div className="inputfield">
+                    <input type="password" placeholder="Confirm Password" value={user.confirmPassword} name='confirmPassword' onChange={UserHandler} />
+                </div>
+                <div className="inputfield">
+                    <input type="submit" value="Register"/>
+                </div>
+                <p className="forget">Already have an account? <Link className="link" to={"/"}>Login</Link></p>
+            </form>
+
         </div>
     )
 }

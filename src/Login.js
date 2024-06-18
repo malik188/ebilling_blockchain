@@ -1,57 +1,92 @@
-import { useState } from "react";
-import { auth } from "./firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { Link, useNavigate } from "react-router-dom";
-import { ethers } from "ethers";
-import { Button, Card } from "react-bootstrap";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React, {  useState } from 'react'
+import './Signup.css'
+import { useAuth } from './context/UserAuthContext'
+import { Link, useNavigate } from "react-router-dom"
 
 const Login = () => {
-    const navigate = useNavigate();
-    const [notice, setNotice] = useState("");
+  const { UserLogin } = useAuth()
+  const [err, setError] = useState("")
+  const [user, setUser] = useState({
+    email: "",
+    password: "",
+  })
+  const navigate = useNavigate()
 
-    // parameter autentikasi
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+  const UserHandler = (e) => {
+    const { name, value } = e.target;
+    setUser((pre) => {
+      return {
+        ...pre,
+        [name]: value
+      }
+    })
+  }
 
-    const loginWithUsernameAndPassword = async (e) => {
-        e.preventDefault();
+  const SubmitHandler = async (e) => {
+    e.preventDefault()
+    const { email, password } = user
+    if (email == "" || password == "") {
+      setInterval(() => {
+        setError("")
+      }, 5000)
+      return setError("Fill All the Field")
+    }
+    try {
+      await UserLogin(email, password)
+      navigate("/profile")
+    } catch (error) {
 
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            navigate("./profile");
-        } catch {
-            setNotice("You entered a wrong username or password.");
-        }
+      if (error.code == "auth/user-not-found") {
+        setInterval(() => {
+          setError("")
+        }, 5000)
+        return setError("User Not Found")
+      }
+      else if (error.code == "auth/wrong-password") {
+        setInterval(() => {
+          setError("")
+        }, 5000)
+        return setError("Wrong Password")
+      }
+      else {
+        setInterval(() => {
+          setError("")
+        }, 5000)
+        return setError(`${error.message}`)
+      }
     }
 
-    return(
-        <div className = "container">
-            <div className = "row justify-content-center">
-                <form className = "col-md-4 mt-3 pt-3 pb-3">
-                    { "" !== notice &&
-                        <div className = "alert alert-warning" role = "alert">
-                            { notice }    
-                        </div>
-                    }                  
-                    <div className = "form-floating mb-3">
-                        <input type = "email" className = "form-control" id = "exampleInputEmail1" aria-describedby = "emailHelp" placeholder = "name@example.com" value = { email } onChange = { (e) => setEmail(e.target.value) }></input>
-                        <label htmlFor = "exampleInputEmail1" className = "form-label">Email address</label>
-                    </div>
-                    <div className = "form-floating mb-3">
-                        <input type = "password" className = "form-control" id = "exampleInputPassword1" placeholder = "Password" value = { password } onChange = { (e) => setPassword(e.target.value) }></input>
-                        <label htmlFor = "exampleInputPassword1" className = "form-label">Password</label>
-                    </div>
-                    <div className = "d-grid">
-                        <button type = "submit" className = "btn btn-primary pt-3 pb-3" onClick = {(e) => loginWithUsernameAndPassword(e)}>Submit</button>
-                    </div>
-                    <div className = "mt-3 text-center">
-                        <span>Need to sign up for an account? <Link to = "./signup">Click here.</Link></span>
-                    </div>
-                </form>
-            </div>
+  }
+  return (
+
+
+    <div className='box'>
+      {
+
+        err && <p className='error'>{err}</p>
+
+      }
+
+      <form onSubmit={SubmitHandler} className="form">
+        <h2>Login Form</h2>
+
+        <div className="inputfield">
+          <input type="email" placeholder="Email" value={user.email} name='email' onChange={UserHandler} />
         </div>
-    )
+
+        <div className="inputfield">
+          <input type="password" placeholder="Password" value={user.password} name='password' onChange={UserHandler} />
+        </div>
+
+        <div className="inputfield">
+          <input type="submit" value="Login" />
+        </div>
+        <p className="forget">Don't have an account?   <Link className="link" to={"Signup"}>Sign Up!</Link></p>
+      </form>
+
+    </div>
+
+  )
 }
 
 export default Login
