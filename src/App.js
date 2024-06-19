@@ -2,7 +2,7 @@ import Layout from "./Layout";
 import Login from "./Login";
 import Signup from "./Signup";
 import Profile from "./Profile";
-import Panduan from './Panduan';
+// import Panduan from './Panduan';
 import About from "./About";
 import Teams from "./Teams";
 import UserAuthContext from './context/UserAuthContext';
@@ -18,6 +18,8 @@ const router = createBrowserRouter(createRoutesFromElements(
     <Route index element={<Login />}></Route>
     <Route path='/Signup' element={<Signup />}></Route>
     <Route path = "/profile" element = { <Profile></Profile> }></Route>
+    <Route path='/about' element={<About />}></Route>
+    <Route path='/teams' element={<Teams />}></Route>
   </Route>
 ));
 function App() {

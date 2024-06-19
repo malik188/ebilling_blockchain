@@ -2,10 +2,10 @@ import { useContext, createContext, useEffect, useState } from "react"
 
 import {
   AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged,
-  signInWithEmailAndPassword, signOut, getAuth, sendEmailVerification
+  signInWithEmailAndPassword, signOut, getAuth, sendEmailVerification, updateProfile,
 } from 'firebase/auth'
 import { auth, db } from "../firebase";
-import { addDoc, collection, doc, setDoc } from "firebase/firestore";
+import { addDoc, collection, doc, setDoc, getDoc } from "firebase/firestore";
 
 
 const userContext = createContext();
@@ -34,17 +34,20 @@ const UserAuthContext = ({ children }) => {
     setError("");
     createUserWithEmailAndPassword(auth, email, password).then(
       async (result) => {
-        console.log(result)
         try {
           // const docRef = await addDoc(collection(db, "users"), {
           //   FullName,
           //   userId: `${result.user.uid}`
           // });
+          await updateProfile(auth.currentUser, { displayName: FullName }).catch(
+            (err) => console.log(err)
+          );
           const ref = doc(db, "userinfo", result.user.uid)
           const docRef = await setDoc(ref, { FullName })
           alert("Welcome new User create successfully")
           
           console.log("Document written with ID: ", docRef.id);
+          console.log(result)
         } catch (e) {
           console.error("Error adding document: ", e);
         }

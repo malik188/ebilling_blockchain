@@ -15,13 +15,13 @@ const Navbar = () => {
                 <Bars />
 
                 <NavMenu>
-                    <NavLink to="/profile" >
+                    <NavLink to="/profile">
                         Home
                     </NavLink>
-                    <NavLink to="/about" activeStyle>
+                    <NavLink to="/about">
                         Panduan
                     </NavLink>
-                    <NavLink to="/team" activeStyle>
+                    <NavLink to="/teams">
                         Bayar Listrik
                     </NavLink>
                 </NavMenu>

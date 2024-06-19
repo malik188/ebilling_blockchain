@@ -1,12 +1,22 @@
 import { useNavigate } from "react-router-dom";
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
 import { signOut } from "firebase/auth";
 import Navbar from "./components/Navbar";
 import './Teams.css'
-import { Button, Card } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ethers } from 'ethers';
+import { collection, getDocs } from "firebase/firestore";
+
+async function fetchName() {
+  const querySnapshot = await getDocs(collection(db, "userinfo"))
+
+  const data = [];
+  querySnapshot.forEach((doc) => {
+    data.push({ id: doc.id, ...doc.data()});
+  });
+  return data;
+}
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -19,11 +29,48 @@ const Profile = () => {
         navigate("/");
     }
 
+    const [userName, setUserName] = useState(0);
+
+    useEffect(() => {
+      async function fetchData() {
+        const data = await fetchName()
+        data.forEach((nama_data) => {
+          if (nama_data.id === user.uid) {
+            setUserName(nama_data.FullName);
+          }
+        });
+      }
+
+      fetchData();   
+    }, [])
+
+    // console.log(userName)
+
+    // Randomize function
+    const daya = ["R1/900 VA", "R1/1300 VA", "R1/2200 VA", "R2/3500 VA", "R2/5500 VA"];
+    const random = Math.floor(Math.random() * daya.length);
+    const getRandomInteger = (min, max) => {
+      min = Math.ceil(min)
+      max = Math.floor(max)
+    
+      return Math.floor(Math.random() * (max - min)) + min
+    }
+    const randomInteger = getRandomInteger(300000, 500000)
+    const numberWithCommas = (value) => {
+      return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+
+    today = dd + '/' + mm + '/' + yyyy;
+
     const [walletAddress, setWalletAddress] = useState("");
     // const [walletBalance, setWalletBalance] = useState(0.0);
 
    // Requests access to the user's META MASK WALLET
-   // https://metamask.io
    async function requestAccount() {
      console.log('Requesting account...');
  
@@ -76,12 +123,12 @@ const Profile = () => {
                         <br></br>
                         <h2>Informasi Tagihan</h2>
                         <br></br>
-                        <p>Nama:{user.email}</p>
-                        <p>IDPEL: 111111111111</p>
-                        <p>Tanggal: 11 Juni 2024</p>
-                        <p>Daya: 900 VA</p> 
+                        <p>Nama: {userName}</p>
+                        <p>IDPEL: {Math.floor(Math.random() * 999999999999)}</p>
+                        <p>Daya: {daya[random]}</p>
+                        <p>Tanggal: {today}</p> 
                         {/* Tarif/Daya: R1/000000900VA */}
-                        <p>Total Bayar: Rp 500.000</p>
+                        <p>Total Bayar: Rp{numberWithCommas(randomInteger)}</p>
                         <button type = "submit" className = "submit-btn" onClick = {(e) => logoutUser(e)}>Bayar</button>
                         <br></br>
                         <br></br>

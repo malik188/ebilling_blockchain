@@ -86,7 +86,7 @@
     font-weight: 300;
     cursor: pointer;
 }
-button {
+/* button {
     padding: 10px 20px 10px 20px;
     color: rgb(0, 0, 0);
     background: rgb(97, 97, 97);
@@ -95,7 +95,7 @@ button {
     margin-bottom: 20px;
     font-weight: 300;
     cursor: pointer;
-}
+} */
 .forget {
     margin-top: 5px;
     color: rgb(0, 0, 0);
