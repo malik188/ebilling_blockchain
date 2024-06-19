@@ -67,49 +67,34 @@ const Profile = () => {
 
     today = dd + '/' + mm + '/' + yyyy;
 
-    const [walletAddress, setWalletAddress] = useState("");
-    // const [walletBalance, setWalletBalance] = useState(0.0);
-
-   // Requests access to the user's META MASK WALLET
-   async function requestAccount() {
-     console.log('Requesting account...');
- 
-     // Check if Meta Mask Extension exists 
-     if(window.ethereum) {
-       console.log('detected');
- 
-       try {
-         const accounts = await window.ethereum.request({
-           method: "eth_requestAccounts",
-         });
-         setWalletAddress(accounts[0]);
-
-        //  const balance = await window.ethereum.request({
-        //   "method": "eth_getBalance",
-        //   "params": [
-        //     accounts[0],
-        //     "latest"
-        //   ]
-        // });
-        // const ethBalance = window.ethereum.
-        // console.log(balance);
-       } catch (error) {
-         console.log('Error connecting...');
-       }
- 
-     } else {
-       alert('MetaMask not detected');
-     }
-   }
- 
-   // Create a provider to interact with a smart contract
-   async function connectWallet() {
-     if(typeof window.ethereum !== 'undefined') {
-       await requestAccount();
- 
-       const provider = new ethers.providers.Web3Provider(window.ethereum);
-     }
-   }
+    // Metamask
+    const [errorMessage, setErrorMessage] = useState(null);
+    const [defaultAccount, setDefaultAccount] = useState(null);
+    const [userBalance, setUserBalance] = useState(null);
+  
+    const connectWallet = () => {
+      if (window.ethereum) {
+          window.ethereum.request({method: 'eth_requestAccounts'})
+          .then(result => {
+            accountChanged([result[0]])
+          })
+      } else {
+        setErrorMessage('Install MetaMask please!!')
+      }
+    }
+  
+    const accountChanged = (accountName) => {
+      setDefaultAccount(accountName)
+      getUserBalance(accountName)
+  
+    }
+  
+    const getUserBalance = (accountAddress) => {
+      window.ethereum.request({method: 'eth_getBalance', params: [String(accountAddress), "latest"]})
+      .then(balance => {
+        setUserBalance(ethers.utils.formatEther(balance));
+      })
+    }
 
     return(
         <div className = "container">
@@ -132,12 +117,13 @@ const Profile = () => {
                         <button type = "submit" className = "submit-btn" onClick = {(e) => logoutUser(e)}>Bayar</button>
                         <br></br>
                         <br></br>
-                        <button onClick={requestAccount}>Connect Metamask Account</button>
-                        <p>Wallet Address: {walletAddress}</p>
+                        <button onClick={connectWallet}>Connect Metamask Account</button>
                         <br></br>
                         <br></br>
-                        {/* <p>Wallet Address: {ethBalance}</p> */}
-                        {/* <p>Wallet Balance: {walletBalance}</p> */}
+                        <p>Address: {defaultAccount}</p>
+                        <p>Balance:  {userBalance}</p>
+                        <br></br>
+                        <br></br>
                     </div>             
                 </div>
             </div>
